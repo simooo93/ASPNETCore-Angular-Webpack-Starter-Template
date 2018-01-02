@@ -27,15 +27,12 @@ module.exports = (env) => {
                 { test: /\.css$/, use: [ 'to-string-loader', isDevBuild ? 'css-loader' : 'css-loader?minimize' ] },
                 { test: /\.(png|jpg|jpeg|gif|svg)$/, use: 'url-loader?limit=25000' },
                 {
-                    test: /\.scss$/, use: extractSass.extract({
-                        use: [{
-                            loader: "css-loader"
-                        }, {
-                            loader: "sass-loader"
-                        }],
-                        // use to-string-loader in development
-                        fallback: "to-string-loader"
-                    })
+                    test: /\.scss$/,
+                    use: isDevBuild ?
+                        ['to-string-loader', 'css-loader', 'sass-loader'] :
+                        extractSass.extract({
+                            use: ['to-string-loader', 'css-loader?minimize', 'sass-loader']
+                        })
                 }
             ]
         },
