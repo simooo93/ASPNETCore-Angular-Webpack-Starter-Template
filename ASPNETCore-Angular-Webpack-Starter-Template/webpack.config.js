@@ -38,12 +38,7 @@ module.exports = (env) => {
                 {
                     test: /\.scss$/,
                     use: isDevBuild ? ['style-loader', 'css-loader', 'sass-loader'] : ExtractTextPlugin.extract({
-                        use: [{
-                            loader: "css-loader?minimize"
-                        }, {
-                            loader: "sass-loader"
-                        }],
-                        // use to-string-loader in development 
+                        use: ["css-loader?minimize", "sass-loader" ],
                         fallback: "to-string-loader"
                     })
                 }]
@@ -82,12 +77,7 @@ module.exports = (env) => {
             rules: [
                 {
                     test: /\.scss$/, use: ExtractTextPlugin.extract({
-                        use: [{
-                            loader: "css-loader"
-                        }, {
-                            loader: "sass-loader"
-                        }],
-                        // use to-string-loader in development 
+                        use: ["css-loader", "sass-loader"],
                         fallback: "to-string-loader"
                     })
                 } ]
@@ -100,8 +90,7 @@ module.exports = (env) => {
                 name: './vendor'
             }),
             new ExtractTextPlugin({
-                filename: "style.css",
-                disable: isDevBuild
+                filename: "style.css"
             })
         ].concat(isDevBuild ? [] : [
             // Plugins that apply in production builds only
