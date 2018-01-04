@@ -8,10 +8,6 @@ const ExtractTextPlugin = require("extract-text-webpack-plugin");
 module.exports = (env) => {
     // Configuration in common to both client-side and server-side bundles
     const isDevBuild = !(env && env.prod);
-    const extractSass = new ExtractTextPlugin({
-        filename: "[name].[contenthash].css",
-        disable: isDevBuild
-    });
     const sharedConfig = {
         stats: { modules: false },
         context: __dirname,
@@ -24,19 +20,12 @@ module.exports = (env) => {
             rules: [
                 { test: /\.ts$/, use: isDevBuild ? ['awesome-typescript-loader?silent=true', 'angular2-template-loader', 'angular2-router-loader'] : '@ngtools/webpack' },
                 { test: /\.html$/, use: 'html-loader?minimize=false' },
-                { test: /\.css$/, use: [ 'to-string-loader', isDevBuild ? 'css-loader' : 'css-loader?minimize' ] },
-                { test: /\.(png|jpg|jpeg|gif|svg)$/, use: 'url-loader?limit=25000' },
-                {
-                    test: /\.scss$/,
-                    use: isDevBuild ?
-                        ['to-string-loader', 'css-loader', 'sass-loader'] :
-                        extractSass.extract({
-                            use: ['to-string-loader', 'css-loader?minimize', 'sass-loader']
-                        })
-                }
+                { test: /\.css$/, use: ['to-string-loader', isDevBuild ? 'css-loader' : 'css-loader?minimize'] },
+                { test: /\.(png|jpg|jpeg|gif|svg)$/, use: 'url-loader?limit=25000' }
+               
             ]
         },
-        plugins: [new CheckerPlugin(), extractSass]
+        plugins: [new CheckerPlugin()]
     };
 
     // Configuration for client-side bundle suitable for running in browsers
@@ -44,10 +33,29 @@ module.exports = (env) => {
     const clientBundleConfig = merge(sharedConfig, {
         entry: { 'main-client': './ClientApp/boot.browser.ts' },
         output: { path: path.join(__dirname, clientBundleOutputDir) },
+        module: {
+            rules: [
+                {
+                    test: /\.scss$/,
+                    use: isDevBuild ? ['style-loader', 'css-loader', 'sass-loader'] : ExtractTextPlugin.extract({
+                        use: [{
+                            loader: "css-loader?minimize"
+                        }, {
+                            loader: "sass-loader"
+                        }],
+                        // use to-string-loader in development 
+                        fallback: "to-string-loader"
+                    })
+                }]
+        },
         plugins: [
             new webpack.DllReferencePlugin({
                 context: __dirname,
                 manifest: require('./wwwroot/dist/vendor-manifest.json')
+            }),
+            new ExtractTextPlugin({
+                filename: "style.css",
+                disable: isDevBuild
             })
         ].concat(isDevBuild ? [
             // Plugins that apply in development builds only
@@ -70,12 +78,30 @@ module.exports = (env) => {
     const serverBundleConfig = merge(sharedConfig, {
         resolve: { mainFields: ['main'] },
         entry: { 'main-server': './ClientApp/boot.server.ts' },
+        module: {
+            rules: [
+                {
+                    test: /\.scss$/, use: ExtractTextPlugin.extract({
+                        use: [{
+                            loader: "css-loader"
+                        }, {
+                            loader: "sass-loader"
+                        }],
+                        // use to-string-loader in development 
+                        fallback: "to-string-loader"
+                    })
+                } ]
+        },
         plugins: [
             new webpack.DllReferencePlugin({
                 context: __dirname,
                 manifest: require('./ClientApp/dist/vendor-manifest.json'),
                 sourceType: 'commonjs2',
                 name: './vendor'
+            }),
+            new ExtractTextPlugin({
+                filename: "style.css",
+                disable: isDevBuild
             })
         ].concat(isDevBuild ? [] : [
             // Plugins that apply in production builds only
