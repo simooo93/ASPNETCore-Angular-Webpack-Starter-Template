@@ -77,7 +77,7 @@ module.exports = (env) => {
             rules: [
                 {
                     test: /\.scss$/, use: ExtractTextPlugin.extract({
-                        use: ["css-loader", "sass-loader"],
+                        use: ["css-loader?minimize", "sass-loader"],
                         fallback: "to-string-loader"
                     })
                 } ]
