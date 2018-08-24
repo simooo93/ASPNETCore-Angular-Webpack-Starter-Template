@@ -1,2 +1,2 @@
 # ASPNETCore-Angular-Webpack-Starter-Template
-This is the default started template with included sass loaders for webpack
+The default starter template for asp-net core with angular but with included sass loaders for webpack
